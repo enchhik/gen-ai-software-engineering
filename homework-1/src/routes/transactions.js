@@ -32,7 +32,7 @@ const toCsv = (rows) => {
   const escape = (val) => {
     if (val === null || val === undefined) return "";
     const str = String(val);
-    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+    return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
   };
   const lines = [headers.join(",")];
   for (const row of rows) {

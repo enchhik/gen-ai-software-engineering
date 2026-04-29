@@ -194,7 +194,39 @@ describe("Banking Transactions API", () => {
     });
   });
 
+  describe("Unknown routes", () => {
+    it("returns 404 with structured body for unknown path", async () => {
+      const res = await request(app).get("/no-such-thing");
+      expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: "Not found" });
+    });
+  });
+
   describe("GET /accounts/:id/balance", () => {
+    it("aggregates per currency for multi-currency account", async () => {
+      await request(app).post("/transactions").send({
+        toAccount: "ACC-A0001",
+        amount: 100,
+        currency: "USD",
+        type: "deposit",
+      });
+      await request(app).post("/transactions").send({
+        toAccount: "ACC-A0001",
+        amount: 50,
+        currency: "EUR",
+        type: "deposit",
+      });
+      await request(app).post("/transactions").send({
+        fromAccount: "ACC-A0001",
+        amount: 20,
+        currency: "EUR",
+        type: "withdrawal",
+      });
+
+      const res = await request(app).get("/accounts/ACC-A0001/balance");
+      expect(res.body.balance).toEqual({ USD: 100, EUR: 30 });
+    });
+
     it("computes balance from transfers, deposits, withdrawals", async () => {
       await request(app).post("/transactions").send({
         toAccount: "ACC-A0001",
@@ -266,6 +298,22 @@ describe("Banking Transactions API", () => {
       expect(res.text.split("\n")[0]).toBe(
         "id,fromAccount,toAccount,amount,currency,type,timestamp,status",
       );
+    });
+
+    it("escapes commas, quotes, newlines, and CR in field values", async () => {
+      const created = await request(app).post("/transactions").send({
+        toAccount: "ACC-A0001",
+        amount: 10,
+        currency: "USD",
+        type: "deposit",
+      });
+      // Inject tricky characters via storage to bypass schema validation
+      const tricky = storage.findById(created.body.id);
+      tricky.toAccount = 'ACC,",\n\rX';
+
+      const res = await request(app).get("/transactions/export");
+      const dataLine = res.text.split("\n").slice(1).join("\n");
+      expect(dataLine).toContain('"ACC,"",\n\rX"');
     });
   });
 });

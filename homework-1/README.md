@@ -8,7 +8,7 @@
 
 ## 📋 Project Overview
 
-A minimal REST API for banking transactions, built with **Node.js + Express** and validated with **zod**. Storage is fully in-memory (an array) — no database required. All four required endpoints are implemented, plus **two bonus features** from Task 4 (Account Summary and CSV Export). The project ships with **18 Jest + supertest tests** that all pass.
+A minimal REST API for banking transactions, built with **Node.js + Express** and validated with **zod**. Storage is fully in-memory (an array) — no database required. All four required endpoints are implemented, plus **two bonus features** from Task 4 (Account Summary and CSV Export). The project ships with **21 Jest + supertest tests** that all pass.
 
 ---
 
@@ -32,7 +32,7 @@ A minimal REST API for banking transactions, built with **Node.js + Express** an
 
 ### Quality of life
 - `GET /health` — for smoke testing / probes
-- 18 automated tests (Jest + supertest)
+- 21 automated tests (Jest + supertest)
 - `nodemon` dev mode
 - `demo/` folder with `run.sh`, `sample-requests.http`, `sample-data.json`
 
@@ -76,19 +76,20 @@ Key decisions (and *why*):
 
 ---
 
-## 🧪 Test Coverage (18 tests)
+## 🧪 Test Coverage (21 tests)
 
 - **POST**: deposit happy path, bad account, negative amount, >2 decimals, invalid currency, transfer-self, ignores client-supplied id/timestamp
 - **GET list**: all, filter by accountId, filter by type, combined, date range
 - **GET :id**: 200 + 404
-- **Balance**: math correctness (deposit + transfer + withdrawal), 400 on bad account
+- **Unknown routes**: 404 fallback with structured body
+- **Balance**: math correctness (deposit + transfer + withdrawal), 400 on bad account, **multi-currency aggregation**
 - **Summary** (Bonus A): structure check
-- **Export** (Bonus C): content-type and CSV header
+- **Export** (Bonus C): content-type, CSV header, **escape of commas / quotes / newlines / CR**
 
 ```bash
 npm test
 # Test Suites: 1 passed, 1 total
-# Tests:       18 passed, 18 total
+# Tests:       21 passed, 21 total
 ```
 
 ---

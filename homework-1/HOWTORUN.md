@@ -68,7 +68,7 @@ No `.env` file is required — the application has no external dependencies (sto
 
 ## 🧪 Testing
 
-The project ships with 18 Jest + supertest tests covering happy paths, validation, filters, balance math, summary, and CSV export.
+The project ships with 21 Jest + supertest tests covering happy paths, validation, filters, balance math (incl. multi-currency), summary, CSV export (incl. escape edge cases), and 404 fallback.
 
 ```bash
 npm test
@@ -78,7 +78,7 @@ Expected output:
 
 ```
 Test Suites: 1 passed, 1 total
-Tests:       18 passed, 18 total
+Tests:       21 passed, 21 total
 ```
 
 ## 📡 Quick API smoke test
