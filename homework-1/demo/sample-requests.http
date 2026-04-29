@@ -1,0 +1,75 @@
+### Health check
+GET http://localhost:3000/health
+
+### Create a deposit
+POST http://localhost:3000/transactions
+Content-Type: application/json
+
+{
+  "toAccount": "ACC-A0001",
+  "amount": 500.00,
+  "currency": "USD",
+  "type": "deposit"
+}
+
+### Create a transfer
+POST http://localhost:3000/transactions
+Content-Type: application/json
+
+{
+  "fromAccount": "ACC-A0001",
+  "toAccount": "ACC-B0002",
+  "amount": 100.50,
+  "currency": "USD",
+  "type": "transfer"
+}
+
+### Create a withdrawal
+POST http://localhost:3000/transactions
+Content-Type: application/json
+
+{
+  "fromAccount": "ACC-A0001",
+  "amount": 25.75,
+  "currency": "USD",
+  "type": "withdrawal"
+}
+
+### Validation error: bad account format
+POST http://localhost:3000/transactions
+Content-Type: application/json
+
+{
+  "fromAccount": "BAD-1",
+  "toAccount": "ACC-B0002",
+  "amount": -1,
+  "currency": "ZZZ",
+  "type": "transfer"
+}
+
+### List all transactions
+GET http://localhost:3000/transactions
+
+### Filter by accountId
+GET http://localhost:3000/transactions?accountId=ACC-A0001
+
+### Filter by type
+GET http://localhost:3000/transactions?type=transfer
+
+### Filter by date range
+GET http://localhost:3000/transactions?from=2024-01-01&to=2030-12-31
+
+### Combined filter
+GET http://localhost:3000/transactions?accountId=ACC-A0001&type=transfer
+
+### Get single transaction (replace :id)
+GET http://localhost:3000/transactions/REPLACE_WITH_ID
+
+### Account balance
+GET http://localhost:3000/accounts/ACC-A0001/balance
+
+### Account summary (Bonus A)
+GET http://localhost:3000/accounts/ACC-A0001/summary
+
+### Export transactions as CSV (Bonus C)
+GET http://localhost:3000/transactions/export?format=csv
