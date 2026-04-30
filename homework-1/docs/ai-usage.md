@@ -143,7 +143,6 @@ All sample bodies are reproducible from `homework-1/demo/sample-requests.http`.
 | Balance per currency | Returned `{ USD: 799.5, EUR: 200 }` map, not a single number | One account can hold multi-currency txs in this in-memory model |
 | Date filtering | Inclusive end-of-day for `?to=YYYY-MM-DD` | More user-friendly; matches typical banking UI behavior |
 | Server-controlled fields | `id` / `timestamp` / `status` ignored from request body | Standard REST hygiene; prevents trivial spoofing |
-| Pitfall: `homework-1` branch | Flagged that the spec wants `homework-1-submission` | Renamed before continuing |
 | Pitfall: PR direction | Reminded that GitHub defaults to upstream as base | Avoided silent rejection |
 | CSV escape regex missed `\r` | Caught during self-review; added `\r` so Excel-style line endings round-trip cleanly | Proven by a new test asserting the escape on CR + LF + comma + quote |
 | Multi-currency balance | Self-review noted no test covered USD+EUR on one account; added one | Confirms `{USD, EUR}` map shape is real, not just by-code-reading |
