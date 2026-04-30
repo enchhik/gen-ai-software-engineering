@@ -101,23 +101,15 @@ This project was built end-to-end via **Claude Code** in plan mode. Detailed pro
 1. **Project research** — Claude read `README.md`, `TASKS.md`, `.gitignore`, `git remote/branch` to derive a 20-item pitfalls checklist (saved as a planning doc).
 2. **Stack decision** — Claude proposed FastAPI as recommended; I chose Node + Express.
 3. **Scaffolding** — Claude generated `package.json`, `src/`, validators, routes, tests, demo files in one pass.
-4. **Verification** — `npm test` (18/18 passing) and live `curl` smoke test confirmed correctness before commit.
+4. **Verification** — `npm test` (21/21 passing) and live `curl` smoke test confirmed correctness before commit.
+5. **Compliance review + gap-fill** — Claude self-mapped `TASKS.md` requirements to file/lines, surfaced 8 minor gaps; 4 of them were addressed in a follow-up commit.
 
 What I verified myself:
 - Validation rules vs. `TASKS.md` requirements (regex for `ACC-XXXXX`, ≤2 decimals, ISO 4217)
 - Balance math by hand on the smoke test
 - That the server actually responds (not just the tests)
 
-See `docs/screenshots/` for AI-interaction captures.
-
----
-
-## ⚠️ Known limitations
-
-- **Volatile storage** — server restart wipes everything. By design (spec).
-- **No auth** — out of scope.
-- **No concurrency control** — single-process, no async writers, so not a concern here.
-- **`status` is always `completed`** — spec doesn't define a transition flow; left as a stub field.
+See [`docs/screenshots/`](./docs/screenshots/) for both AI-interaction captures (project research → plan → review) and live demo captures (server running + sample API requests/responses for every endpoint, including bonuses).
 
 ---
 

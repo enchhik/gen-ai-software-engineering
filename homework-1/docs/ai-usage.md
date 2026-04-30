@@ -80,7 +80,7 @@ Claude ran the work as a tracked todo list (TaskCreate / TaskUpdate per step), s
 - `npm start` on port 3001 + smoke test with `curl`:
   - Health, POST deposit/transfer/withdrawal, validation error (4 problems detected), list, filter, balance (`799.50` — verified by hand: 1000 − 150.50 − 50), summary, CSV
 
-📸 Screenshots: `implementation-plan-7.png` (todo-list mid-implementation), `bonus+tests-6.png` (final smoke-test output)
+📸 Screenshots: `implementation-plan-7.png` (todo-list mid-implementation), `bonus+tests-6.png` (final smoke-test output), `first-commit-10.png` (first commit landed on the branch)
 
 ---
 
@@ -101,7 +101,36 @@ Claude ran the work as a tracked todo list (TaskCreate / TaskUpdate per step), s
 - `\r` added to the CSV escape regex for Excel-friendliness
 - Test count: **18 → 21**
 
-📸 Screenshots: `claude-review-8.png` (the compliance review table), `tests-9.png` (final 21/21 green run), `commit-10.png` (gap-fill commit)
+📸 Screenshots: `claude-review-8.png` (the compliance review table), `tests-9.png` (final 21/21 green run), `add-some-tests-11.png` (gap-fill commit)
+
+---
+
+### Phase 6 — PR draft
+
+**Prompt:** *"давай складемо чорновик тіла PR"* + follow-ups *"можливо текст PR краще українською і без таблиць"*, *"прибери все зайве з PR"*
+
+**What Claude did:**
+- Drafted a PR body following the 4-section template required by the root `README.md` (Summary / AI tools / Challenges / Screenshots)
+- Iterated twice: switched to Ukrainian without tables, then trimmed aggressively so the PR body stays a one-screen overview that links out to `README.md` / `ai-usage.md` for depth
+- Provided both a GitHub-UI checklist and a `gh pr create` command for submission
+
+📸 Screenshot: `make-text-PR-12.png` (PR body draft in chat)
+
+---
+
+## Live demo screenshots (running application + sample requests)
+
+These are not AI-interaction captures — they are evidence that the API actually runs and behaves as specified. Required by the root `README.md`'s "Screenshots" section.
+
+- `running-in-terminal.png` — `npm start` output: server listening on `http://localhost:3000`
+- `create-deposit.png` — `POST /transactions` with `type: "deposit"` returning `201 Created`
+- `create-transfer.png` — `POST /transactions` with `type: "transfer"` (both accounts present and distinct)
+- `create-withdrawal.png` — `POST /transactions` with `type: "withdrawal"`
+- `get-summary.png` — `GET /accounts/:id/summary` (Bonus A) — totals per currency, count, most-recent timestamp
+- `export-csv.png` — `GET /transactions/export?format=csv` (Bonus C) — full CSV body with header and rows
+- `other-http-requests.png` — assorted GETs: list with filters, by id, balance, validation-error response
+
+All sample bodies are reproducible from `homework-1/demo/sample-requests.http`.
 
 ---
 
