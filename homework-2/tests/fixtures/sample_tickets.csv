@@ -1,0 +1,51 @@
+customer_id,customer_email,customer_name,subject,description,metadata.source,metadata.browser,metadata.device_type,tags
+cust-1,user1@example.com,User 1,Billing invoice question 1,Need help with invoice payment and subscription charge 1.,email,n/a,mobile,billing;invoice
+cust-2,user2@example.com,User 2,App crash bug 2,App crash shows error and regression on startup flow 2.,api,n/a,tablet,bug;crash
+cust-3,user3@example.com,User 3,Feature request suggestion 3,Would be nice to add enhancement for dashboard export 3.,chat,n/a,desktop,feature;suggestion
+cust-4,user4@example.com,User 4,Critical security incident 4,Critical production down security issue blocking users 4.,phone,n/a,mobile,urgent;security
+cust-5,user5@example.com,User 5,Login issue 5,Cannot login to account after password reset attempt 5.,web_form,Chrome 120,tablet,auth;access
+cust-6,user6@example.com,User 6,Billing invoice question 6,Need help with invoice payment and subscription charge 6.,email,n/a,desktop,billing;invoice
+cust-7,user7@example.com,User 7,App crash bug 7,App crash shows error and regression on startup flow 7.,api,n/a,mobile,bug;crash
+cust-8,user8@example.com,User 8,Feature request suggestion 8,Would be nice to add enhancement for dashboard export 8.,chat,n/a,tablet,feature;suggestion
+cust-9,user9@example.com,User 9,Critical security incident 9,Critical production down security issue blocking users 9.,phone,n/a,desktop,urgent;security
+cust-10,user10@example.com,User 10,Login issue 10,Cannot login to account after password reset attempt 10.,web_form,Chrome 120,mobile,auth;access
+cust-11,user11@example.com,User 11,Billing invoice question 11,Need help with invoice payment and subscription charge 11.,email,n/a,tablet,billing;invoice
+cust-12,user12@example.com,User 12,App crash bug 12,App crash shows error and regression on startup flow 12.,api,n/a,desktop,bug;crash
+cust-13,user13@example.com,User 13,Feature request suggestion 13,Would be nice to add enhancement for dashboard export 13.,chat,n/a,mobile,feature;suggestion
+cust-14,user14@example.com,User 14,Critical security incident 14,Critical production down security issue blocking users 14.,phone,n/a,tablet,urgent;security
+cust-15,user15@example.com,User 15,Login issue 15,Cannot login to account after password reset attempt 15.,web_form,Chrome 120,desktop,auth;access
+cust-16,user16@example.com,User 16,Billing invoice question 16,Need help with invoice payment and subscription charge 16.,email,n/a,mobile,billing;invoice
+cust-17,user17@example.com,User 17,App crash bug 17,App crash shows error and regression on startup flow 17.,api,n/a,tablet,bug;crash
+cust-18,user18@example.com,User 18,Feature request suggestion 18,Would be nice to add enhancement for dashboard export 18.,chat,n/a,desktop,feature;suggestion
+cust-19,user19@example.com,User 19,Critical security incident 19,Critical production down security issue blocking users 19.,phone,n/a,mobile,urgent;security
+cust-20,user20@example.com,User 20,Login issue 20,Cannot login to account after password reset attempt 20.,web_form,Chrome 120,tablet,auth;access
+cust-21,user21@example.com,User 21,Billing invoice question 21,Need help with invoice payment and subscription charge 21.,email,n/a,desktop,billing;invoice
+cust-22,user22@example.com,User 22,App crash bug 22,App crash shows error and regression on startup flow 22.,api,n/a,mobile,bug;crash
+cust-23,user23@example.com,User 23,Feature request suggestion 23,Would be nice to add enhancement for dashboard export 23.,chat,n/a,tablet,feature;suggestion
+cust-24,user24@example.com,User 24,Critical security incident 24,Critical production down security issue blocking users 24.,phone,n/a,desktop,urgent;security
+cust-25,user25@example.com,User 25,Login issue 25,Cannot login to account after password reset attempt 25.,web_form,Chrome 120,mobile,auth;access
+cust-26,user26@example.com,User 26,Billing invoice question 26,Need help with invoice payment and subscription charge 26.,email,n/a,tablet,billing;invoice
+cust-27,user27@example.com,User 27,App crash bug 27,App crash shows error and regression on startup flow 27.,api,n/a,desktop,bug;crash
+cust-28,user28@example.com,User 28,Feature request suggestion 28,Would be nice to add enhancement for dashboard export 28.,chat,n/a,mobile,feature;suggestion
+cust-29,user29@example.com,User 29,Critical security incident 29,Critical production down security issue blocking users 29.,phone,n/a,tablet,urgent;security
+cust-30,user30@example.com,User 30,Login issue 30,Cannot login to account after password reset attempt 30.,web_form,Chrome 120,desktop,auth;access
+cust-31,user31@example.com,User 31,Billing invoice question 31,Need help with invoice payment and subscription charge 31.,email,n/a,mobile,billing;invoice
+cust-32,user32@example.com,User 32,App crash bug 32,App crash shows error and regression on startup flow 32.,api,n/a,tablet,bug;crash
+cust-33,user33@example.com,User 33,Feature request suggestion 33,Would be nice to add enhancement for dashboard export 33.,chat,n/a,desktop,feature;suggestion
+cust-34,user34@example.com,User 34,Critical security incident 34,Critical production down security issue blocking users 34.,phone,n/a,mobile,urgent;security
+cust-35,user35@example.com,User 35,Login issue 35,Cannot login to account after password reset attempt 35.,web_form,Chrome 120,tablet,auth;access
+cust-36,user36@example.com,User 36,Billing invoice question 36,Need help with invoice payment and subscription charge 36.,email,n/a,desktop,billing;invoice
+cust-37,user37@example.com,User 37,App crash bug 37,App crash shows error and regression on startup flow 37.,api,n/a,mobile,bug;crash
+cust-38,user38@example.com,User 38,Feature request suggestion 38,Would be nice to add enhancement for dashboard export 38.,chat,n/a,tablet,feature;suggestion
+cust-39,user39@example.com,User 39,Critical security incident 39,Critical production down security issue blocking users 39.,phone,n/a,desktop,urgent;security
+cust-40,user40@example.com,User 40,Login issue 40,Cannot login to account after password reset attempt 40.,web_form,Chrome 120,mobile,auth;access
+cust-41,user41@example.com,User 41,Billing invoice question 41,Need help with invoice payment and subscription charge 41.,email,n/a,tablet,billing;invoice
+cust-42,user42@example.com,User 42,App crash bug 42,App crash shows error and regression on startup flow 42.,api,n/a,desktop,bug;crash
+cust-43,user43@example.com,User 43,Feature request suggestion 43,Would be nice to add enhancement for dashboard export 43.,chat,n/a,mobile,feature;suggestion
+cust-44,user44@example.com,User 44,Critical security incident 44,Critical production down security issue blocking users 44.,phone,n/a,tablet,urgent;security
+cust-45,user45@example.com,User 45,Login issue 45,Cannot login to account after password reset attempt 45.,web_form,Chrome 120,desktop,auth;access
+cust-46,user46@example.com,User 46,Billing invoice question 46,Need help with invoice payment and subscription charge 46.,email,n/a,mobile,billing;invoice
+cust-47,user47@example.com,User 47,App crash bug 47,App crash shows error and regression on startup flow 47.,api,n/a,tablet,bug;crash
+cust-48,user48@example.com,User 48,Feature request suggestion 48,Would be nice to add enhancement for dashboard export 48.,chat,n/a,desktop,feature;suggestion
+cust-49,user49@example.com,User 49,Critical security incident 49,Critical production down security issue blocking users 49.,phone,n/a,mobile,urgent;security
+cust-50,user50@example.com,User 50,Login issue 50,Cannot login to account after password reset attempt 50.,web_form,Chrome 120,tablet,auth;access
