@@ -1,5 +1,9 @@
 # Homework 2: Intelligent Customer Support System
 
+> **Student Name**: Denys Ostrometskyi
+> **Date Submitted**: 2026-05-04
+> **AI Tools Used**: Claude Code (Claude Sonnet 4.6, Claude Opus 4.7), OpenAI Codex (GPT-5.4)
+
 Lean REST API for support tickets built with TypeScript, Express, Zod, in-memory storage, deterministic auto-classification, and bulk import from CSV, JSON, and XML.
 
 ## What is implemented
@@ -139,14 +143,21 @@ Full endpoint details are in [docs/API_REFERENCE.md](./docs/API_REFERENCE.md).
 
 ## AI tools and models used
 
-| Artifact | Model |
-|---|---|
-| Code (app.ts, classifier.ts, importers, store) | Claude Sonnet 4.6 |
-| Unit and integration tests | Claude Sonnet 4.6 |
-| README.md, HOWTORUN.md, API_REFERENCE.md, TESTING_GUIDE.md | Claude Sonnet 4.6 |
-| ARCHITECTURE.md (Mermaid diagrams, design tradeoffs) | Claude Opus 4.7 |
+| Phase / Artifact | Tool | Model | Effort |
+|---|---|---|---|
+| Phase 1-2 — Scaffold, ticket model | Claude Code | Claude Sonnet 4.6 | Medium |
+| Phase 3 — Classifier | Claude Code | Claude Sonnet 4.6 | Medium |
+| Phase 4-5 — Importers (CSV/JSON/XML), in-memory store | Claude Code | Claude Sonnet 4.6 | Medium |
+| Phase 6 — Express API (CRUD, validation, filtering) | Claude Code | Claude Sonnet 4.6 | Medium |
+| Phase 7 — Bulk import endpoint | OpenAI Codex | GPT-5.4 | Medium |
+| Phase 8 — Fixtures, lifecycle and performance tests | OpenAI Codex | GPT-5.4 | Medium |
+| Phase 9 — Coverage push to >85% | OpenAI Codex | GPT-5.4 | Medium |
+| Phase 10 — Documentation (README, HOWTORUN, API_REFERENCE, TESTING_GUIDE) | Claude Code | Claude Sonnet 4.6 | Medium |
+| Phase 10 — ARCHITECTURE.md (Mermaid diagrams, design tradeoffs) | Claude Code | Claude Opus 4.7 | High |
+| Phase 11 — Final review against `TASKS.md` and `SPEC.md` | Claude Code | Claude Opus 4.7 | High |
+| Post-review fixes | Claude Code | Claude Sonnet 4.6 | Medium |
 
-Every prompt used `docs/SPEC.md` as the context source of truth.
+Every prompt used `docs/SPEC.md` as the context source of truth. Phase-by-phase model and effort log with screenshot evidence is in [`docs/PLAN.md`](./docs/PLAN.md).
 
 ## Request flow
 
