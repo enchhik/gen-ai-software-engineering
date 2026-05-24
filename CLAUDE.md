@@ -54,7 +54,7 @@ After opening: assign reviewer **Alexey-Popov**, add label `homework-N`.
 
 ## Working conventions
 
-**Language:** code, comments, docs, commit messages, and PR bodies are English. Chat with the user is Ukrainian.
+**Language:** code, comments, docs, and commit messages are English. **PR bodies and chat with the user are Ukrainian.** (PR descriptions follow the structure the instructor approved on the homework-2 PR: a `/cc @Alexey-Popov` line, a summary, an explicit `TASKS.md` compliance section, a how-to-verify section, and a Context → Model → Prompt breakdown of AI usage.)
 
 **Commit messages:** Conventional Commits format — `<type>(<scope>): <subject>`.
 
