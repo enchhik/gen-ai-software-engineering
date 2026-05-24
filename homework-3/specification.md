@@ -110,7 +110,7 @@ Exactly one of:
 - **PII at rest:** encrypted with a managed KMS key; passport scans and selfies are stored in object storage with per-object encryption and short-lived signed URLs.
 - **PII in logs:** PAN, CVV, OTP code, passport number, RNOKPP are **forbidden** in application logs; only stable internal IDs are logged. Reason codes are logged as enum values, never as free-form strings.
 - **OTP secrecy:** OTP is single-use, never logged, never returned in API responses, transmitted only via the SMS provider.
-- **Authentication:** internal users use SSO with MFA; service-to-service uses mTLS or short-lived JWTs.
+- **Authentication:** internal users use SSO with MFA; service-to-service uses short-lived, narrowly-scoped JWTs.
 - **Authorisation:** role-based, enforced at the API gateway and re-checked in service code (deny-by-default). The "general category vs. full reason codes" split is enforced server-side; the client cannot escalate.
 - **Audit log integrity:** append-only, hash-chained, with at least one out-of-band replica per business day.
 
@@ -297,15 +297,15 @@ Each task ties back to one or more Mid-Level Objectives. Tasks are listed in app
 **Prompt to AI:**
 > Create domain types for `Application`, `Decision`, `Offer`, `Contract`, `Loan`, `PayoutTransaction`, and `AuditEvent`. Encode the state machine for `Loan` with the transitions described in §7.3. Make illegal transitions impossible to express (state-as-type, not state-as-string).
 
-**File:** `src/domain/loan_state.py` (and adjacent type files)
+**File:** `src/domain/loan-state.ts` (and adjacent type files)
 **Details:**
-- `Loan` is a tagged union over states; transitions are pure functions returning the next state or a typed error.
-- All money fields use `Decimal`, never `float`. Amounts are stored as integer minor units (`kopiyky`) plus currency code.
-- All timestamps are `datetime` with explicit UTC; offer- and signature-related timestamps additionally carry the policy version id active at that moment.
+- `Loan` is a discriminated union over states; transitions are pure functions returning the next state or a typed error.
+- All money fields use a `decimal.js` value, never the JS `number`/float. Amounts are stored as integer minor units (`kopiyky`, `BigInt`) plus currency code.
+- All timestamps are stored in UTC (ISO-8601 at API boundaries); offer- and signature-related timestamps additionally carry the policy version id active at that moment.
 
 **Definition of Done:**
 - Property-based tests demonstrate that no sequence of valid transitions can land in an undefined state.
-- Linter rule forbids `float` in any module under `src/domain/money/`.
+- Linter rule forbids the JS `number` type for monetary values in any module under `src/domain/money/`.
 
 ---
 
@@ -316,7 +316,7 @@ Each task ties back to one or more Mid-Level Objectives. Tasks are listed in app
 **Prompt to AI:**
 > Implement the scoring orchestrator that, given an `application_id`, runs identity checks, calls the credit-bureau adapter, queries internal history, runs anti-fraud checks, and combines all signals into one `Decision` object with a category and a detailed reason-code list. Each external call has a timeout and a circuit breaker.
 
-**File:** `src/services/scoring.py`
+**File:** `src/services/scoring.service.ts`
 **Details:**
 - Each external integration is a separate adapter behind an interface; the orchestrator does not know about HTTP.
 - A single-flight lock by `application_id` prevents concurrent scoring (edge case C-1).
@@ -336,7 +336,7 @@ Each task ties back to one or more Mid-Level Objectives. Tasks are listed in app
 **Prompt to AI:**
 > Implement the reason-code redaction layer. Detailed reason codes are categorised into a small set of borrower-facing categories. Implement a single redaction function used by every borrower-facing serializer; add a lint rule that forbids returning `reason_codes_detail` from any handler whose response is consumed by the borrower role.
 
-**File:** `src/services/decision_redaction.py`
+**File:** `src/services/decision-redaction.service.ts`
 **Details:**
 - Categories: `not_eligible`, `verification_failed`, `try_later`, `technical_issue`, `under_review`.
 - Mapping table is in code and versioned; changes require a policy migration.
@@ -355,7 +355,7 @@ Each task ties back to one or more Mid-Level Objectives. Tasks are listed in app
 **Prompt to AI:**
 > Implement the offer renderer. Given a `Decision` of category `approved` or `counter_offer`, produce an `Offer` artifact containing all NBU-mandated fields (effective annual rate, total amount payable, schedule, penalty terms, withdrawal right, lender details, consent text). Persist the rendered text plus a structured representation plus a SHA-256 of both. The renderer is pure — same inputs produce the same artifact bytes.
 
-**File:** `src/services/offer_renderer.py`
+**File:** `src/services/offer-renderer.service.ts`
 **Details:**
 - Effective annual rate is computed using the regulator's defined formula; store both the borrower-displayed rounded value and the exact internal value.
 - Offer carries the `policy_version_id` and `nbu_template_id` active at issuance.
@@ -375,7 +375,7 @@ Each task ties back to one or more Mid-Level Objectives. Tasks are listed in app
 **Prompt to AI:**
 > Implement the OTP service: generate a 6-digit code, send via the SMS provider adapter, store only a salted hash, enforce a 5-minute TTL and 3-attempt limit, enforce a 60-second resend cooldown. Implement the signature endpoint that validates the OTP, marks the offer as signed, and records `OfferSigned` in the audit log with an HMAC over the offer hash, offer id, borrower id, and timestamp.
 
-**File:** `src/services/otp.py`, `src/services/signature.py`
+**File:** `src/services/otp.service.ts`, `src/services/signature.service.ts`
 **Details:**
 - OTP code is never returned in any API response, never logged in any form.
 - After 3 failed attempts the offer is invalidated; the borrower may request a new offer (which re-runs the freshness check on scoring).
@@ -394,7 +394,7 @@ Each task ties back to one or more Mid-Level Objectives. Tasks are listed in app
 **Prompt to AI:**
 > Implement the card-payout adapter for a Visa-Direct-style PSP. Calls carry a deterministic `idempotency_key` derived from `application_id + payout_attempt_seq`. Retry policy is 3 attempts with exponential backoff (5s, 30s, 5min). On a successful PSP response, set the loan state to `disbursement_pending`; only the PSP webhook (or the reconciliation job) moves it to `disbursed`. Compute and store `interest_accrual_start_at` = payout-confirmed timestamp.
 
-**File:** `src/adapters/psp_payout.py`, `src/services/disbursement.py`
+**File:** `src/adapters/psp-payout.adapter.ts`, `src/services/disbursement.service.ts`
 **Details:**
 - PSP webhook handler validates signature, looks up the payout by PSP `transaction_id`, is idempotent (edge case T-6).
 - On exhausting retries with non-retryable failure → `disbursement_failed`, emit `OfferCancelledDueToPayoutFailure`.
@@ -413,7 +413,7 @@ Each task ties back to one or more Mid-Level Objectives. Tasks are listed in app
 **Prompt to AI:**
 > Implement an append-only audit log keyed by `application_id`. Each event carries an event type, payload (with PII redaction rules applied), monotonic sequence number, timestamp, actor, and a hash chained to the previous event. Provide a daily integrity-check job and a replay function that reconstructs application state from events.
 
-**File:** `src/services/audit_log.py`
+**File:** `src/services/audit-log.service.ts`
 **Details:**
 - Allowed event types are enumerated: `ApplicationSubmitted`, `ScoringStarted`, `ScoringCompleted`, `OfferIssued`, `OtpSent`, `OtpVerified`, `OfferSigned`, `PayoutRequested`, `PayoutSucceeded`, `PayoutFailed`, `OfferCancelledDueToPayoutFailure`, `ApplicationManualReviewQueued`, `ApplicationManualReviewDecided`, `ComplianceHoldApplied`.
 - PII redaction rules forbid PAN, CVV, OTP, passport number; allow stable internal IDs.
@@ -432,7 +432,7 @@ Each task ties back to one or more Mid-Level Objectives. Tasks are listed in app
 **Prompt to AI:**
 > Implement the officer-facing endpoints for the manual-review queue: list, claim, view full decision detail, approve, decline, override with reason. Each decision is recorded with the acting officer's id and a free-text justification field (this field is internal-only and audit-logged).
 
-**File:** `src/services/manual_review.py`
+**File:** `src/services/manual-review.service.ts`
 **Details:**
 - SLA timer per item; items breach SLA at 1 business day and alert.
 - Officer cannot view another officer's claim's payload until claim is released.
@@ -451,7 +451,7 @@ Each task ties back to one or more Mid-Level Objectives. Tasks are listed in app
 **Prompt to AI:**
 > Implement the policy engine that holds the current rates, caps, cut-offs, and counter-offer rules. Every policy change is a versioned migration with an `effective_from` timestamp. The decision service must use the policy version active at the application's submission time, not the "current" policy.
 
-**File:** `src/services/policy.py`
+**File:** `src/services/policy.service.ts`
 **Details:**
 - Policies are immutable once `effective_from` has passed; previously signed offers reference the exact version id used.
 - Risk / product manager role can stage and activate new policies; activation requires a second-pair sign-off (out of slice in detail, but interface is present).

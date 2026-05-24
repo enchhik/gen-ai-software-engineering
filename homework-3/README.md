@@ -74,6 +74,25 @@ The intent is that the verification list cannot be padded with "we have tests" �
 
 ---
 
+## Technical stack
+
+`agents.md` pins a concrete stack so an implementing agent does not improvise one. The stack was chosen **interactively, point by point** — not auto-selected: an initial Python/FastAPI default was reviewed and deliberately changed to a TypeScript/Node stack at the author's direction.
+
+| Layer | Choice | Why |
+|---|---|---|
+| Language | TypeScript on Node.js | Static typing for a money/decision domain; team-portable |
+| Web framework | NestJS | Structured (modules, DI, decorators) with built-in OpenAPI — the closest Node analogue to FastAPI |
+| Persistence | MySQL / MariaDB via Prisma | Relational integrity for ledger and audit data; Prisma gives typed access plus migrations |
+| Async model | Node native (`async`/`await`) | Non-blocking by default — fits the many external I/O calls (bureau, fraud, PSP, SMS); no extra choice needed |
+| HTTP client | native `fetch` (undici) + `opossum` | No extra dependency for calls; `opossum` provides the per-dependency circuit breaker the spec requires |
+| Money | integer minor units (`BigInt`) + `decimal.js` | JS `number` is an IEEE-754 float and unsafe for money; minor-unit storage plus a decimal library avoids rounding loss |
+| Service-to-service auth | short-lived, scoped JWTs | Simpler to operate and rotate than mTLS for this slice |
+| Tests | Vitest + fast-check; testcontainers; Schemathesis | Property-based tests for money/state/idempotency; real-DB integration; contract fuzzing against the OpenAPI surface |
+
+Because JavaScript has no native decimal type and `number` is a float, the money rule is stated explicitly in `agents.md` §2.1 and `specification.md` Task 2: store `BigInt` minor units, compute with `decimal.js`, never touch `number` in a money path.
+
+---
+
 ## Industry best practices applied — where they appear
 
 The spec embeds the practices below. Each row points to the section that operationalises the practice.
@@ -97,7 +116,7 @@ The spec embeds the practices below. Each row points to the section that operati
 | **Webhook signature validation, idempotency on provider transaction id** | `specification.md` Task 7, §7.2 (T-6, T-7); `agents.md` §6 |
 | **Reconciliation job for missing webhooks** | `specification.md` Task 7, §5.3, §7.3 (S-2) |
 | **Compliance review checkpoints as part of release** | `specification.md` §8.3 |
-| **Money as Decimal + integer minor units, never float** | `specification.md` Task 2; `agents.md` §2.1 |
+| **Money as integer minor units (`BigInt`) + `decimal.js`, never JS `number`/float** | `specification.md` Task 2; `agents.md` §2.1 |
 | **Manual-review SLA with breach alerting** | `specification.md` §6, Task 9 |
 
 These practices are deliberately spread across the spec rather than collected into a "best practices" appendix — they should bite where the design lives, not in a list nobody re-reads.
@@ -108,7 +127,8 @@ These practices are deliberately spread across the spec rather than collected in
 
 The spec was produced in a single Claude Code session in **interview mode**:
 
-- The AI asked focused questions, one topic at a time (domain choice → slice scope → borrower journey → scoring inputs → scoring outputs → offer/signature → disbursement → stakeholders → performance numbers → edge cases).
+- The AI asked focused questions, one topic at a time (domain choice → slice scope → borrower journey → scoring inputs → scoring outputs → offer/signature → disbursement → stakeholders → performance numbers → edge cases → technical stack).
+- The technical stack in `agents.md` was reviewed point by point in a follow-up pass: an initial Python/FastAPI default was deliberately replaced with a TypeScript / NestJS / Prisma / MySQL stack at the author's direction (see the Technical stack section above). The AI flagged a conflict mid-review (an attempt to keep FastAPI — a Python-only framework — while switching the language to TypeScript) and re-asked rather than silently picking one.
 - The human supplied substance from personal knowledge, opinions as a user, and live web research for regulator citations (e.g., NBU 1%/day cap, 14-day withdrawal right, market-size data for throughput sizing).
 - The AI formalised each answer into spec language and pushed back where the human's framing was incomplete (e.g., "you described 3 functions — is the score a 4th, or part of one of the others?").
 - The AI proposed structure (9 sections, table-per-stakeholder, edge-case ID scheme); the human approved or pushed back per section.

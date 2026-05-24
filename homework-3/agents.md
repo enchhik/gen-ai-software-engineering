@@ -10,16 +10,16 @@ The agent MUST read `specification.md` before any task and treat it as the sourc
 
 The agent should assume, unless the task says otherwise:
 
-- **Language:** Python 3.12+ with full type hints (`from __future__ import annotations`).
-- **Framework:** FastAPI for HTTP, Pydantic v2 for schemas.
-- **Persistence:** PostgreSQL via SQLAlchemy 2.x; migrations via Alembic.
-- **Async:** `asyncio` end-to-end; no sync DB calls from request handlers.
-- **HTTP clients:** `httpx.AsyncClient` with timeouts and circuit breakers (`purgatory` or `pybreaker`).
-- **Money:** `decimal.Decimal` and integer minor units (`kopiyky`). Never `float`.
-- **Time:** `datetime.datetime` with explicit UTC. Never naive datetimes.
-- **Config:** Pydantic-Settings; secrets from environment, never from files in the repo.
-- **Testing:** `pytest`, `hypothesis` for property tests, `schemathesis` for contract tests, `testcontainers` for integration tests against real Postgres.
-- **OpenAPI:** OpenAPI 3.1 as source of truth (`specs/loan-decision-api.yaml`); FastAPI app generated from it where practical, otherwise validated against it in CI.
+- **Language:** TypeScript on Node.js (current LTS). `strict` mode on; no implicit `any`.
+- **Framework:** NestJS for HTTP (modules, providers, dependency injection); `class-validator` / `class-transformer` for request validation.
+- **Persistence:** MySQL 8.x / MariaDB via Prisma ORM; schema and migrations managed by Prisma Migrate.
+- **Async:** Node's native non-blocking I/O; all I/O is `async`/`await`. No synchronous DB or HTTP calls in request handlers.
+- **HTTP clients:** native `fetch` (undici) with an explicit per-call timeout, wrapped in an `opossum` circuit breaker per external dependency (bureau, fraud, PSP, SMS).
+- **Money:** integer minor units (`kopiyky`, stored as `BigInt`) for storage; `decimal.js` for arithmetic. Never the JS `number`/float in money paths.
+- **Time:** UTC everywhere; ISO-8601 strings at boundaries. Never rely on the server's local timezone.
+- **Config:** `@nestjs/config` with a schema-validated (Zod) settings object; secrets from the environment, never from files in the repo.
+- **Testing:** `vitest` as the runner; `fast-check` for property tests; `testcontainers` (Node) for integration tests against a real MySQL; `schemathesis` (language-agnostic, run against the live app) for contract fuzzing of the OpenAPI surface.
+- **OpenAPI:** OpenAPI 3.1 is the source of truth (`specs/loan-decision-api.yaml`). The NestJS-generated OpenAPI is checked against it in CI and the build fails on drift.
 
 The agent must not silently substitute different libraries. If a task seems to require a new library, the agent surfaces this as a question, with rationale.
 
@@ -31,9 +31,9 @@ These are hard rules. Any code suggestion that breaks one of these is wrong, eve
 
 ### 2.1 Money
 
-- Money is `Decimal` (display) and `int` minor units (storage). No `float` anywhere in money paths.
+- Money is `decimal.js` (arithmetic/display) and `BigInt` minor units (storage). No JS `number`/float anywhere in money paths.
 - Every monetary value carries an explicit currency code (ISO 4217, e.g. `"UAH"`).
-- Rounding uses banker's rounding (`ROUND_HALF_EVEN`) unless the regulator's formula specifies otherwise (effective rate calc — follow the formula exactly).
+- Rounding uses banker's rounding (`decimal.js` `ROUND_HALF_EVEN`) unless the regulator's formula specifies otherwise (effective rate calc — follow the formula exactly).
 
 ### 2.2 PII
 
@@ -54,7 +54,7 @@ These are hard rules. Any code suggestion that breaks one of these is wrong, eve
 
 - `Loan` state transitions follow the state machine in `specification.md` §7.3.
 - Transitions are implemented as **pure functions** returning either the next state or a typed transition error. There is no `loan.state = "..."` mutation in business code.
-- Illegal transitions are unrepresentable at the type level (tagged unions, not `str` enums for the state value).
+- Illegal transitions are unrepresentable at the type level (discriminated unions on a literal `status` field, not a bare `string`).
 
 ### 2.5 Decision disclosure
 
@@ -81,10 +81,10 @@ These are hard rules. Any code suggestion that breaks one of these is wrong, eve
 
 ## 3. Code style
 
-- **Naming:** `snake_case` for identifiers, `PascalCase` for types, no Hungarian notation.
+- **Naming:** `camelCase` for variables and functions, `PascalCase` for types and classes, `UPPER_SNAKE_CASE` for constants; no Hungarian notation.
 - **Functions:** small, single-purpose. A function over 40 lines or with > 3 levels of nesting is a refactoring signal, not a goal.
-- **Public APIs:** every public function has type hints and a short docstring stating what it does and what it returns. No "obvious" docstrings ("returns the user"); explain non-obvious invariants or constraints.
-- **Errors:** typed exceptions, not strings. Each external integration has its own exception family.
+- **Public APIs:** every exported function has explicit parameter and return types and a short TSDoc comment stating what it does and what it returns. No "obvious" comments ("returns the user"); explain non-obvious invariants or constraints.
+- **Errors:** typed error classes, not strings. Each external integration has its own error-class family.
 - **Comments:** only for non-obvious *why*. Never explain *what* the code does — the code does that.
 - **Tests:** one logical assertion per test where feasible; descriptive names; `Given / When / Then` structure in test bodies for non-trivial flows.
 
@@ -120,10 +120,10 @@ If the agent encounters a situation the spec does not cover, it does not invent 
 ## 6. Security defaults
 
 - All external calls go over TLS. Plain HTTP is rejected at startup unless `ENV=local-dev`.
-- Service-to-service authentication is mTLS or short-lived JWTs; never long-lived shared secrets in code.
+- Service-to-service authentication uses short-lived, narrowly-scoped JWTs; never long-lived shared secrets in code.
 - Webhook handlers validate provider signatures before reading any payload field.
 - Rate limits at the API gateway. Application-level rate limits for OTP send and resend (per spec §6).
-- No SQL string interpolation. Parameterised queries only.
+- No raw SQL string interpolation. Use the Prisma client; if raw SQL is unavoidable, use parameterised `$queryRaw` tagged templates, never `$queryRawUnsafe` with interpolated input.
 - Dependency vulnerabilities are blocking; the CI gate fails on a known critical CVE.
 
 ---
