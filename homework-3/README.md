@@ -2,7 +2,7 @@
 
 > **Student:** Denys Ostrometskyi
 > **Date submitted:** 2026-05-17
-> **AI tools used:** Claude Code (Opus 4.7), with a structured interview-mode workflow described below.
+> **AI tools used:** Claude Code (Opus 4.7) for interview-mode authoring and the interactive stack decision; OpenAI Codex for an independent review pass. Workflow described below.
 
 ---
 
