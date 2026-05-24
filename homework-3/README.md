@@ -1,7 +1,7 @@
 # Homework 3 — Specification-Driven Design
 
 > **Student:** Denys Ostrometskyi
-> **Date submitted:** 2026-05-17
+> **Date submitted:** 2026-05-24
 > **AI tools used:** Claude Code (Opus 4.7) for interview-mode authoring and the interactive stack decision; OpenAI Codex for an independent review pass. Workflow described below.
 
 ---
