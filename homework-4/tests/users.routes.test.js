@@ -1,0 +1,32 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import request from 'supertest';
+import { createApp } from '../src/app.js';
+import { createDb } from '../src/db.js';
+import { signToken } from '../src/auth.js';
+
+function tokenFor(id = 1, email = 'alice@example.com') {
+  return signToken({ id, email });
+}
+
+test('GET /users/:id requires a token', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users/1');
+  assert.equal(res.status, 401);
+});
+
+test('GET /users/:id returns the user without the password field', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users/1')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.email, 'alice@example.com');
+  assert.equal(res.body.password, undefined);
+});
+
+test('GET /users/:id returns 404 for missing user', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users/999')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 404);
+});
