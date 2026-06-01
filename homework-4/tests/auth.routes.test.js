@@ -31,3 +31,29 @@ test('POST /auth/register rejects duplicate email with 409', async () => {
   const res = await request(app).post('/auth/register').send(body);
   assert.equal(res.status, 409);
 });
+
+test('POST /auth/login returns a token for valid credentials', async () => {
+  const app = makeApp();
+  const res = await request(app).post('/auth/login')
+    .send({ email: 'alice@example.com', password: 'alice-pass' });
+  assert.equal(res.status, 200);
+  assert.ok(res.body.token);
+});
+
+test('POST /auth/login rejects wrong password with 401', async () => {
+  const app = makeApp();
+  const res = await request(app).post('/auth/login')
+    .send({ email: 'alice@example.com', password: 'wrong' });
+  assert.equal(res.status, 401);
+});
+
+// BUG-2: expected to be RED in the before-state. Intended behaviour is that
+// login matches email case-insensitively. The seeded user 'Carol@example.com'
+// must be reachable by 'carol@example.com'.
+test('POST /auth/login matches email case-insensitively (BUG-2 — expected red)', async () => {
+  const app = makeApp();
+  const res = await request(app).post('/auth/login')
+    .send({ email: 'carol@example.com', password: 'carol-pass' });
+  assert.equal(res.status, 200);
+  assert.ok(res.body.token);
+});
