@@ -1,0 +1,17 @@
+{
+  "name": "homework-4-sample-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test tests/"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "better-sqlite3": "^11.3.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0"
+  }
+}
