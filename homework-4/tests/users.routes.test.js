@@ -30,3 +30,20 @@ test('GET /users/:id returns 404 for missing user', async () => {
     .set('Authorization', `Bearer ${tokenFor()}`);
   assert.equal(res.status, 404);
 });
+
+test('GET /users/search?q=alice returns the Alice row', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users/search?q=alice')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.length, 1);
+  assert.equal(res.body[0].email, 'alice@example.com');
+});
+
+test('GET /users/search?q=example returns multiple rows', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users/search?q=example')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.ok(res.body.length >= 5);
+});
