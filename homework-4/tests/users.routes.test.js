@@ -47,3 +47,23 @@ test('GET /users/search?q=example returns multiple rows', async () => {
   assert.equal(res.status, 200);
   assert.ok(res.body.length >= 5);
 });
+
+// BUG-1(a): expected red. Default limit of 10 should be applied when no
+// limit is supplied; current code returns all 12 seeded rows.
+test('GET /users applies a default limit of 10 (BUG-1 — expected red)', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.length, 10);
+});
+
+// BUG-1(b): expected red. ?offset=2&limit=3 should return rows with ids 3,4,5;
+// current code is off by one and returns 4,5,6.
+test('GET /users honours offset correctly (BUG-1 — expected red)', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users?offset=2&limit=3')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.deepEqual(res.body.map(r => r.id), [3, 4, 5]);
+});
