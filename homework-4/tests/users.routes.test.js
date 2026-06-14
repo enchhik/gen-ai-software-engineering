@@ -67,3 +67,38 @@ test('GET /users honours offset correctly (BUG-1 — expected red)', async () =>
   assert.equal(res.status, 200);
   assert.deepEqual(res.body.map(r => r.id), [3, 4, 5]);
 });
+
+test('GET /users with explicit limit returns that many rows', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users?limit=5')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.length, 5);
+  assert.deepEqual(res.body.map(r => r.id), [1, 2, 3, 4, 5]);
+});
+
+test('GET /users with offset=0 and default limit returns first 10', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users?offset=0')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.length, 10);
+  assert.deepEqual(res.body.map(r => r.id), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+});
+
+test('GET /users with offset beyond total rows returns empty', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users?offset=20&limit=5')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.length, 0);
+});
+
+test('GET /users with offset at boundary returns partial result', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users?offset=10&limit=5')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.length, 2);
+  assert.deepEqual(res.body.map(r => r.id), [11, 12]);
+});

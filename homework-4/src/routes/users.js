@@ -19,12 +19,12 @@ export function createUsersRouter(db) {
     // BUG-1(a): default limit is not applied; isNaN(limit) → -1 means
     // "no limit" in SQLite, so the endpoint returns every row.
     // Intended fix: default to 10.
-    const limit = parseInt(req.query.limit, 10);
+    const limit = parseInt(req.query.limit, 10) || 10;
     // BUG-1(b): offset is off by one (adds 1 unconditionally).
     // Intended fix: use offset as-is.
-    const offset = (parseInt(req.query.offset, 10) || 0) + 1;
+    const offset = parseInt(req.query.offset, 10) || 0;
     const rows = db.prepare('SELECT id, email, name FROM users ORDER BY id LIMIT ? OFFSET ?')
-      .all(Number.isNaN(limit) ? -1 : limit, offset);
+      .all(limit, offset);
     res.json(rows);
   });
 
