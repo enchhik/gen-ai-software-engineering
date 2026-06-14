@@ -1,20 +1,12 @@
-# BUG-1 — `GET /users` pagination
+# BUG-1 — `GET /users` returns wrong rows
 
-**Symptom:** `GET /users` returns the wrong window of rows. Two interacting
-sub-defects:
+Two unit tests in `tests/users.routes.test.js` are failing:
 
-- (a) When the `limit` query param is missing, no default of 10 is applied.
-- (b) `offset` is shifted by one before reaching the SQL.
+- "GET /users applies a default limit of 10" — expects the default page
+  size to be 10 but observes a different count.
+- "GET /users honours offset correctly" — expects
+  `?offset=2&limit=3` to return user ids `[3, 4, 5]` but observes a
+  different list.
 
-Observable: a bare `GET /users` returns 11 rows (ids 2..12) — defect (b)
-consumes the first row even when no `offset` was supplied — instead of the
-expected 10 (ids 1..10). `?offset=2&limit=3` returns ids 4,5,6 instead of
-the expected 3,4,5.
-
-**Location:** `src/routes/users.js`, the `/` handler.
-
-**Failing tests:**
-- `tests/users.routes.test.js` → "GET /users applies a default limit of 10"
-- `tests/users.routes.test.js` → "GET /users honours offset correctly"
-
-**Expected behaviour:** default `limit` is 10; `offset` is applied verbatim.
+Locate the cause and prepare a fix. The fix must make both failing tests
+pass without regressing any test that is currently green.

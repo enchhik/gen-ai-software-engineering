@@ -1,12 +1,11 @@
-# BUG-2 — `POST /auth/login` case-sensitive email
+# BUG-2 — login fails for users registered with mixed-case email
 
-**Symptom:** A user registered with `Carol@example.com` cannot log in using
-`carol@example.com` — the lookup compares email case-sensitively.
+One unit test in `tests/auth.routes.test.js` is failing:
 
-**Location:** `src/routes/auth.js`, the `/login` handler.
+- "POST /auth/login matches email case-insensitively" — registers
+  `Carol@example.com` (or relies on a seeded user with that casing) and
+  then logs in with `carol@example.com`. Observes 401; expects 200 with a
+  token.
 
-**Failing test:**
-- `tests/auth.routes.test.js` → "POST /auth/login matches email case-insensitively"
-
-**Expected behaviour:** email is normalized (lower-cased) on both registration
-and login before comparison.
+The intended behaviour is that email comparison on login is
+case-insensitive. Locate the cause and prepare a fix.

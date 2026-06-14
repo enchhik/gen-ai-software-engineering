@@ -1,13 +1,12 @@
-# SEC-1 — SQL injection in `GET /users/search`
+# SEC-1 — input-handling weakness in a read endpoint
 
-**Vulnerability:** the `q` query parameter is concatenated directly into the
-SQL string, allowing an attacker to inject arbitrary SQL.
+A pre-pipeline manual security audit flagged a potential input-handling
+weakness in one of the read endpoints of the public API. Identify the
+exact location and the nature of the issue.
 
-**Proof:** `GET /users/search?q=%27%20OR%201=1--` returns every row.
+Existing unit tests are currently green — the weakness is not visible from
+the test suite. Treat the audit note as the only signal; do not assume the
+weakness is the same as the failing-test bugs.
 
-**Location:** `src/routes/users.js`, the `/search` handler.
-
-**Expected fix:** use parameterized `LIKE` with bound parameters
-(`db.prepare('… LIKE ?').all('%' + q + '%')`).
-
-**Detected by:** Security Verifier agent (no failing unit test on its own).
+The Bug Fixer should produce a code change that closes the weakness
+without changing the endpoint's observable behaviour for benign inputs.

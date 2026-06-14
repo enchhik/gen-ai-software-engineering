@@ -1,17 +1,11 @@
-# SEC-2 — hardcoded auth secret and plaintext passwords
+# SEC-2 — secret management and credential storage in the auth module
 
-**Vulnerabilities:**
+A pre-pipeline manual security audit flagged concerns about secret
+management and credential storage in the authentication module. Identify
+the exact weaknesses.
 
-1. The HMAC token secret is a hardcoded string literal in source
-   (`src/auth.js`).
-2. Passwords are stored and compared in plaintext (`hashPassword` is the
-   identity function; `verifyPassword` is `===`).
-
-**Location:** `src/auth.js`.
-
-**Expected fix:**
-- Read the secret from `process.env.AUTH_SECRET` (fail fast if missing).
-- Hash passwords with `crypto.scrypt` (random salt per user) and compare with
-  `crypto.timingSafeEqual`.
-
-**Detected by:** Security Verifier agent.
+**Invariant the fix must preserve:** the existing test
+"POST /auth/login returns a token for valid credentials" — which logs in
+with the seeded credentials `alice@example.com` / `alice-pass` — must
+continue to pass after the fix. The Planner must ensure that any change to
+the credential format remains compatible with the seeded data.
