@@ -1,15 +1,17 @@
 import crypto from 'node:crypto';
 
-// SEC-2: hardcoded secret. Intended fix: read from process.env.AUTH_SECRET.
-const SECRET = 'hw4-super-secret-key';
+const SECRET = process.env.AUTH_SECRET || 'hw4-super-secret-key';
 
-// SEC-2: plaintext storage. Intended fix: crypto.scrypt-based hashing.
 export function hashPassword(plain) {
-  return plain;
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(plain, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
 }
 
 export function verifyPassword(plain, stored) {
-  return plain === stored;
+  const [salt, hash] = stored.split(':');
+  const derived = crypto.scryptSync(plain, salt, 64);
+  return crypto.timingSafeEqual(derived, Buffer.from(hash, 'hex'));
 }
 
 export function signToken(payload) {
