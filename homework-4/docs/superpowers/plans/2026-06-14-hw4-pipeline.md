@@ -608,15 +608,12 @@ git commit -m "docs(homework-4): rewrite bug-context files as symptom-only"
 ```js
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import {
   parseAgentFrontmatter,
   buildSystemPrompt,
   buildUserPrompt,
+  findBoundaryViolations,
 } from '../scripts/pipeline-lib.js';
-
-const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 test('parseAgentFrontmatter extracts model from YAML frontmatter', () => {
   const text = '---\nmodel: claude-opus-4-7\nrole: Foo\n---\n\n# Foo body';
@@ -636,7 +633,6 @@ test('buildSystemPrompt concatenates agent body and skill bodies with separators
   assert.match(out, /AGENT/);
   assert.match(out, /SKILL_A/);
   assert.match(out, /SKILL_B/);
-  // Skills are clearly delimited from the agent body
   assert.ok(out.indexOf('AGENT') < out.indexOf('SKILL_A'));
   assert.ok(out.indexOf('SKILL_A') < out.indexOf('SKILL_B'));
   assert.match(out, /---/);
@@ -650,6 +646,42 @@ test('buildUserPrompt mentions the bug id and the bug-context path', () => {
   const p = buildUserPrompt('BUG-1');
   assert.match(p, /BUG-1/);
   assert.match(p, /context\/bugs\/BUG-1\/bug-context\.md/);
+});
+
+test('buildUserPrompt anchors the working directory to homework-4/', () => {
+  const p = buildUserPrompt('BUG-1');
+  assert.match(p, /homework-4/);
+});
+
+test('buildUserPrompt does NOT say "single output file" (some agents write multiple)', () => {
+  const p = buildUserPrompt('BUG-1');
+  assert.doesNotMatch(p, /single output file/);
+});
+
+test('findBoundaryViolations returns paths not covered by any allowed prefix', () => {
+  const allowed = ['homework-4/src/', 'homework-4/context/bugs/BUG-1/fix-summary.md'];
+  const changed = [
+    'homework-4/src/routes/auth.js',                      // ok (under src/)
+    'homework-4/context/bugs/BUG-1/fix-summary.md',       // ok (exact match)
+    'homework-4/src/server.js',                            // ok (under src/)
+    'homework-4/docs/superpowers/specs/something.md',     // VIOLATION
+    'homework-4/.env',                                     // VIOLATION
+  ];
+  const violations = findBoundaryViolations(changed, allowed);
+  assert.deepEqual(violations.sort(), [
+    'homework-4/.env',
+    'homework-4/docs/superpowers/specs/something.md',
+  ]);
+});
+
+test('findBoundaryViolations returns empty array when all paths are allowed', () => {
+  const allowed = ['homework-4/tests/'];
+  const changed = ['homework-4/tests/auth.routes.test.js', 'homework-4/tests/new.test.js'];
+  assert.deepEqual(findBoundaryViolations(changed, allowed), []);
+});
+
+test('findBoundaryViolations treats empty changed list as no violations', () => {
+  assert.deepEqual(findBoundaryViolations([], ['homework-4/src/']), []);
 });
 ```
 
@@ -705,17 +737,25 @@ export function buildSystemPrompt(agentBody, skillBodies) {
 export function buildUserPrompt(bugId) {
   return [
     `You are part of the homework-4 pipeline. Current bug: ${bugId}.`,
+    `Your working directory is homework-4/; all relative paths in your role`,
+    `description and any file you read or write are resolved against it.`,
     `Bug context: \`context/bugs/${bugId}/bug-context.md\`.`,
-    `Operate strictly within your role and path restrictions described in your system prompt.`,
-    `When done, write your single output file and exit cleanly.`,
+    `Operate strictly within your role and path restrictions described in`,
+    `your system prompt. When done, write the output(s) described in your role and exit cleanly.`,
   ].join(' ');
+}
+
+export function findBoundaryViolations(changedPaths, allowedPrefixes) {
+  return changedPaths.filter(
+    (p) => !allowedPrefixes.some((prefix) => p === prefix || p.startsWith(prefix))
+  );
 }
 ```
 
 - [ ] **Step 4: Run, verify it passes**
 
 From `homework-4/`: `npm test`
-Expected: 5 new tests pass. Prior suite state unchanged (still 3 expected
+Expected: 9 new tests pass. Prior suite state unchanged (still 3 expected
 reds from the app's seeded bugs).
 
 - [ ] **Step 5: Commit**
@@ -750,6 +790,7 @@ import {
   readSkill,
   buildSystemPrompt,
   buildUserPrompt,
+  findBoundaryViolations,
 } from './pipeline-lib.js';
 
 const SCRIPTS = path.dirname(fileURLToPath(import.meta.url));
@@ -778,19 +819,55 @@ const ALLOWED_TOOLS = {
   'unit-test-generator': 'Read,Glob,Grep,Write,Edit,Bash',
 };
 
+// Per-agent paths (relative to REPO root, matching git status output).
+// Each function receives bugId and returns the allowed write prefix(es).
+const ALLOWED_WRITES = {
+  'bug-researcher':      (bug) => [`homework-4/context/bugs/${bug}/research/`],
+  'research-verifier':   (bug) => [`homework-4/context/bugs/${bug}/research/verified-research.md`],
+  'bug-planner':         (bug) => [`homework-4/context/bugs/${bug}/implementation-plan.md`],
+  'bug-fixer':           (bug) => [`homework-4/src/`, `homework-4/context/bugs/${bug}/fix-summary.md`],
+  'security-verifier':   (bug) => [`homework-4/context/bugs/${bug}/security-report.md`],
+  'unit-test-generator': (bug) => [`homework-4/tests/`, `homework-4/context/bugs/${bug}/test-report.md`],
+};
+
 function timestamp() {
   return new Date().toISOString().replace(/[:.]/g, '-');
 }
 
-function autoCommit(bugId) {
-  const add = spawnSync('git', ['add', '-A', 'homework-4/'], {
-    cwd: REPO, stdio: 'inherit',
+function changedPaths() {
+  const r = spawnSync('git', ['status', '--porcelain'], {
+    cwd: REPO, encoding: 'utf8',
   });
+  return (r.stdout || '')
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => line.slice(3)); // strip the 2-char status + space
+}
+
+function checkBoundary(agentName, bugId) {
+  const allowed = ALLOWED_WRITES[agentName](bugId);
+  const violations = findBoundaryViolations(changedPaths(), allowed);
+  return violations;
+}
+
+function rollbackViolations(violations) {
+  for (const p of violations) {
+    // Try to revert tracked changes; if that fails, remove the file.
+    const co = spawnSync('git', ['checkout', '--', p], { cwd: REPO });
+    if (co.status !== 0) spawnSync('git', ['clean', '-fdx', '--', p], { cwd: REPO });
+  }
+}
+
+function autoCommit(bugId) {
+  const paths = [
+    `homework-4/src`,
+    `homework-4/tests`,
+    `homework-4/context/bugs/${bugId}`,
+  ];
+  const add = spawnSync('git', ['add', '--', ...paths], { cwd: REPO });
   if (add.status !== 0) return false;
   const msg = `fix(homework-4): apply pipeline-generated fix for ${bugId}\n\nPipeline artifacts: homework-4/context/bugs/${bugId}/`;
-  const commit = spawnSync('git', ['commit', '-m', msg], {
-    cwd: REPO, stdio: 'inherit',
-  });
+  const commit = spawnSync('git', ['commit', '-m', msg], { cwd: REPO, stdio: 'inherit' });
   return commit.status === 0;
 }
 
@@ -819,6 +896,13 @@ function runAgent(step, bugId, bugRunDir) {
   fs.closeSync(logFd);
   if (r.status !== 0) {
     console.error(`[${bugId}] ${step.name} FAILED (exit ${r.status}). See ${logPath}`);
+    return false;
+  }
+  const violations = checkBoundary(step.name, bugId);
+  if (violations.length) {
+    console.error(`[${bugId}] ${step.name} BOUNDARY VIOLATION; reverting:`);
+    for (const v of violations) console.error(`   - ${v}`);
+    rollbackViolations(violations);
     return false;
   }
   return true;
@@ -868,8 +952,15 @@ function main() {
     }
   }
 
-  const testsOk = runFinalTests(runDir);
-  process.exit(anyFailed || !testsOk ? 1 : 0);
+  // Final all-green verification only makes sense for a complete run.
+  const fullRun = bugs.length === available.length;
+  if (fullRun) {
+    const testsOk = runFinalTests(runDir);
+    process.exit(anyFailed || !testsOk ? 1 : 0);
+  } else {
+    console.log('Partial run; skipping all-green verification.');
+    process.exit(anyFailed ? 1 : 0);
+  }
 }
 
 main();
