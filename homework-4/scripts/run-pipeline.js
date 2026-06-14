@@ -63,18 +63,13 @@ function changedPaths() {
     .map((line) => line.slice(3)); // strip the 2-char status + space
 }
 
-function checkBoundary(agentName, bugId) {
+// Diff against a baseline so we only judge what THIS agent touched.
+// Pre-existing untracked files (e.g. screenshots, notes, WIP) are ignored
+// even if they fall outside the agent's allowed-writes.
+function checkBoundary(agentName, bugId, baseline) {
   const allowed = ALLOWED_WRITES[agentName](bugId);
-  const violations = findBoundaryViolations(changedPaths(), allowed);
-  return violations;
-}
-
-function rollbackViolations(violations) {
-  for (const p of violations) {
-    // Try to revert tracked changes; if that fails, remove the file.
-    const co = spawnSync('git', ['checkout', '--', p], { cwd: REPO });
-    if (co.status !== 0) spawnSync('git', ['clean', '-fdx', '--', p], { cwd: REPO });
-  }
+  const newOrChanged = changedPaths().filter((p) => !baseline.has(p));
+  return findBoundaryViolations(newOrChanged, allowed);
 }
 
 function autoCommit(bugId) {
@@ -106,6 +101,9 @@ function runAgent(step, bugId, bugRunDir) {
   const logPath = path.join(bugRunDir, `${step.name}.log`);
   const logFd = fs.openSync(logPath, 'w');
   console.log(`[${bugId}] ${step.name} (${meta.model}) ...`);
+  // Snapshot git status BEFORE the agent runs, so we can later diff
+  // and judge only what THIS agent introduced.
+  const baseline = new Set(changedPaths());
   const r = spawnSync('claude', [
     '-p', userPrompt,
     '--model', meta.model,
@@ -117,11 +115,14 @@ function runAgent(step, bugId, bugRunDir) {
     console.error(`[${bugId}] ${step.name} FAILED (exit ${r.status}). See ${logPath}`);
     return false;
   }
-  const violations = checkBoundary(step.name, bugId);
+  const violations = checkBoundary(step.name, bugId, baseline);
   if (violations.length) {
-    console.error(`[${bugId}] ${step.name} BOUNDARY VIOLATION; reverting:`);
+    console.error(`[${bugId}] ${step.name} BOUNDARY VIOLATION; chain aborted.`);
+    console.error('The following paths were written outside the agent\'s allowed scope:');
     for (const v of violations) console.error(`   - ${v}`);
-    rollbackViolations(violations);
+    console.error('No automatic rollback was performed. Inspect manually:');
+    console.error('   git status --porcelain');
+    console.error('   git diff -- <path>');
     return false;
   }
   return true;
