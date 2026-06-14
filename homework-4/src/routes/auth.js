@@ -22,8 +22,7 @@ export function createAuthRouter(db) {
     if (!email || !password) {
       return res.status(400).json({ error: 'email and password are required' });
     }
-    // BUG-2: case-sensitive email lookup. Intended fix: lower-case both sides.
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    const user = db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').get(email);
     if (!user || !verifyPassword(password, user.password)) {
       return res.status(401).json({ error: 'invalid credentials' });
     }

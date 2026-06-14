@@ -57,3 +57,27 @@ test('POST /auth/login matches email case-insensitively (BUG-2 — expected red)
   assert.equal(res.status, 200);
   assert.ok(res.body.token);
 });
+
+test('POST /auth/login matches email case-insensitively with uppercase', async () => {
+  const app = makeApp();
+  const res = await request(app).post('/auth/login')
+    .send({ email: 'CAROL@EXAMPLE.COM', password: 'carol-pass' });
+  assert.equal(res.status, 200);
+  assert.ok(res.body.token);
+});
+
+test('POST /auth/login matches email case-insensitively with all-uppercase registered', async () => {
+  const app = makeApp();
+  const res = await request(app).post('/auth/login')
+    .send({ email: 'Alice@Example.Com', password: 'alice-pass' });
+  assert.equal(res.status, 200);
+  assert.ok(res.body.token);
+});
+
+test('POST /auth/login matches email with mixed case variations', async () => {
+  const app = makeApp();
+  const res = await request(app).post('/auth/login')
+    .send({ email: 'FrAnK@eXaMpLe.CoM', password: 'frank-pass' });
+  assert.equal(res.status, 200);
+  assert.ok(res.body.token);
+});
