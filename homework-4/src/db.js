@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import { hashPassword } from './auth.js';
 
 const SEED = [
   ['alice@example.com',   'Alice',    'alice-pass'],
@@ -28,7 +29,11 @@ export function createDb(path = ':memory:') {
   const count = db.prepare('SELECT COUNT(*) AS n FROM users').get().n;
   if (count === 0) {
     const insert = db.prepare('INSERT INTO users (email, name, password) VALUES (?, ?, ?)');
-    const tx = db.transaction((rows) => { for (const r of rows) insert.run(...r); });
+    const tx = db.transaction((rows) => {
+      for (const [email, name, plain] of rows) {
+        insert.run(email, name, hashPassword(plain));
+      }
+    });
     tx(SEED);
   }
   return db;
