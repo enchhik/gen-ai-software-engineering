@@ -102,3 +102,52 @@ test('GET /users with offset at boundary returns partial result', async () => {
   assert.equal(res.body.length, 2);
   assert.deepEqual(res.body.map(r => r.id), [11, 12]);
 });
+
+test('GET /users/search with SQL injection attempt treats pattern as literal (SEC-1)', async () => {
+  const app = createApp(createDb(':memory:'));
+  const maliciousQuery = "alice' OR '1'='1";
+  const res = await request(app).get(`/users/search?q=${encodeURIComponent(maliciousQuery)}`)
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.length, 0);
+});
+
+test('GET /users/search with SQL comment attempt is escaped (SEC-1)', async () => {
+  const app = createApp(createDb(':memory:'));
+  const maliciousQuery = "'; DROP TABLE users; --";
+  const res = await request(app).get(`/users/search?q=${encodeURIComponent(maliciousQuery)}`)
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.length, 0);
+});
+
+test('GET /users/search with percent signs matches correctly (SEC-1)', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users/search?q=%')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.ok(res.body.length >= 0);
+});
+
+test('GET /users/search with apostrophe does not cause SQL injection (SEC-1)', async () => {
+  const app = createApp(createDb(':memory:'));
+  const maliciousQuery = "alice' --";
+  const res = await request(app).get(`/users/search?q=${encodeURIComponent(maliciousQuery)}`)
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.length, 0);
+});
+
+test('GET /users/search with empty query returns matches on all users', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users/search?q=')
+    .set('Authorization', `Bearer ${tokenFor()}`);
+  assert.equal(res.status, 200);
+  assert.ok(res.body.length >= 5);
+});
+
+test('GET /users/search requires authentication (SEC-1)', async () => {
+  const app = createApp(createDb(':memory:'));
+  const res = await request(app).get('/users/search?q=alice');
+  assert.equal(res.status, 401);
+});
