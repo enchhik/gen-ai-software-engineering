@@ -120,9 +120,17 @@ sample-transactions.json
 ### Task 3 — Agent 3 (part 1): Skills & coverage gate
 - Skills `run-pipeline` and `validate-transactions` in `homework-6/.claude/commands/`.
 - Coverage gate implemented **twice**, both calling one shared coverage-check script:
-  1. Claude Code `PreToolUse` hook in `homework-6/.claude/settings.json` (required deliverable; visible in PR).
+  1. **Coverage gate hook** in `homework-6/.claude/settings.json` (required deliverable; visible in PR).
   2. git `pre-push` hook (real enforcement for any terminal push).
 - Threshold: **block if coverage < 80%**.
+
+> **Hook mechanism note:** `TASKS.md` requires the *behavior* ("blocks push if coverage < 80%"),
+> not a specific event name. The settings.json gate is realized via a **`PreToolUse`** hook matching
+> `git push`, because `PreToolUse` is the only Claude Code event that can deny an action *before*
+> it runs (`PostToolUse` fires after the push and cannot block it). So `PreToolUse` is an
+> implementation detail of "coverage gate hook", not an extra requirement.
+> A third, complementary layer is Jest `coverageThreshold: 80`, which fails the *test run* under
+> 80%; both hooks rely on it but it does not by itself block a push.
 
 ### Task 4 — MCP integration
 - `mcp.json` configures **both** context7 and the custom server.
