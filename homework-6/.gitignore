@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+shared/input/*
+shared/processing/*
+shared/output/*
+shared/results/*
+!shared/**/.gitkeep
+*.log
