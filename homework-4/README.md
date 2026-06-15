@@ -190,14 +190,18 @@ model fell short of an Opus reviewer's bar.
 
 ## 🤖 AI Tools Used
 
-- **Claude Code (CLI + headless)** — drove the planning, brainstorming,
-  and per-task implementation through interactive sessions; the
-  orchestrator script (`scripts/run-pipeline.js`) shells out to
-  `claude -p` to run each pipeline agent in isolation.
-- **Claude Opus 4.7** — Research Verifier and Security Verifier.
-- **Claude Sonnet 4.6** — Bug Researcher and Bug Planner; also the
-  driver model during the interactive development session.
-- **Claude Haiku 4.5** — Bug Fixer and Unit Test Generator.
+- **Claude Code (Claude Opus 4.7, medium effort)** — drove the entire
+  interactive session: brainstorming, spec writing, plan writing,
+  orchestrator design, code review subagents, and final pre-PR checks.
+- **Claude Code Task tool (subagents)** — `general-purpose` for
+  per-task implementer steps and `superpowers:code-reviewer` for
+  spec-compliance + code-quality review between tasks. Subagent models
+  are managed by the Claude Code harness.
+- **Pipeline-internal agents**, invoked headless from
+  `scripts/run-pipeline.js`:
+  - Claude Opus 4.7 — Research Verifier, Security Verifier.
+  - Claude Sonnet 4.6 — Bug Researcher, Bug Planner.
+  - Claude Haiku 4.5 — Bug Fixer, Unit Test Generator.
 - **Manual verification** — every claim from the pipeline was re-checked
   against source code and test output before committing. The two
   "Important" findings the Security Verifier flagged on its own output

@@ -78,9 +78,9 @@ ls homework-4/context/bugs/BUG-1/    # research/, implementation-plan.md, fix-su
 
 **Model:**
 
-- **Claude Code Sonnet 4.6 / medium effort** — основна сесія розробки: brainstorming, plans, дизайн orchestrator'а, ручні правки, перевірки.
-- **Claude Code Opus 4.7 / medium effort** — code review subagents між кроками (spec compliance + code quality), фінальна перевірка.
-- **Анонімні pipeline-агенти**, оркестровані через `claude -p`:
+- **Claude Code Opus 4.7 / medium effort** — основна сесія розробки в Claude Code TUI: brainstorming, написання specs і plans, дизайн orchestrator'а, ручні правки, perевірки, координація subagent-driven-execution.
+- **Subagents через Task tool** — `general-purpose` для implementer-кроків плану і `superpowers:code-reviewer` для spec/code-quality review після кожної задачі. Моделі цих subagents визначає Claude Code-харнес.
+- **Pipeline-агенти**, оркестровані через `claude -p` headless з [`scripts/run-pipeline.js`](./homework-4/scripts/run-pipeline.js):
   - Bug Researcher / Bug Planner — Sonnet 4.6.
   - Research Verifier / Security Verifier — Opus 4.7 (TASKS.md: «stronger reasoning»).
   - Bug Fixer / Unit Test Generator — Haiku 4.5 (TASKS.md: «faster/cheaper»).
