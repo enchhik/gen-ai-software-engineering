@@ -1,0 +1,2 @@
+customer_id,customer_email,customer_name,subject,description,metadata.source,metadata.browser,metadata.device_type,tags
+"unterminated,user@example.com,User Broken,Login issue,Bad csv row,web_form,Chrome 120,desktop,auth
