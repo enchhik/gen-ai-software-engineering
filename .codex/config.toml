@@ -1,0 +1,23 @@
+[mcp_servers.github]
+url = "https://api.githubcopilot.com/mcp/"
+bearer_token_env_var = "GITHUB_PAT"
+
+[mcp_servers.filesystem]
+command = "npx"
+args = [
+  "-y",
+  "@modelcontextprotocol/server-filesystem",
+  "/Users/denis/Projects/gen-ai-software-engineering"
+]
+
+[mcp_servers.notion]
+url = "https://mcp.notion.com/mcp"
+
+[mcp_servers.custom_lorem]
+command = "/Users/denis/Projects/gen-ai-software-engineering/homework-5/custom-mcp-server/.venv/bin/python"
+args = ["server.py"]
+cwd = "/Users/denis/Projects/gen-ai-software-engineering/homework-5/custom-mcp-server"
+startup_timeout_sec = 60
+
+[mcp_servers.custom_lorem.tools.read]
+approval_mode = "approve"
