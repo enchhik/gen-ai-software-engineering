@@ -20,3 +20,5 @@ Captures from the homework-4 design and execution session on 2026-06-14.
 | `07-bug-researcher-output.png` | Live `tail -f` of the Bug Researcher agent's log during the BUG-2 pipeline run, including the root-cause summary. |
 | `08-pipeline-artifacts.png` | The pipeline-generated artifacts on disk: `codebase-research.md`, `verified-research.md`, `fix-summary.md`, etc. |
 | `09-pipeline-bug2-success.png` | `npm run pipeline -- BUG-2` end-to-end: all six agents (Researcher → Verifier → Planner → Fixer → Security Verifier → Test Generator) complete and the auto-commit lands. |
+| `10-work-agents-pipeline.png` | Full `npm run pipeline` (no args) processing all four bugs: per-bug agent lines for BUG-1 → BUG-2 → SEC-1 → SEC-2, four `fix(homework-4): apply pipeline-generated fix` commits, and `Final npm test exit code: 0`. |
+| `11-success-pipeline.png` | Post-run analysis in Claude Code: artifact-by-artifact quality review, fix-summary highlights, and the Security Verifier's follow-up findings (e.g. the SEC-2 hardcoded fallback still flagged HIGH). |
