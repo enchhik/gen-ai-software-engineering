@@ -1,27 +1,32 @@
 # Specification — Multi-Agent Banking Pipeline
 
 ## 1. High-Level Objective
+
 A file-driven multi-agent pipeline that validates, fraud-screens, and settles banking
 transactions, writing every outcome to `shared/results/`.
 
 ## 2. Mid-Level Objectives
-- Transactions failing field/amount/currency checks are rejected with a reason and written to `shared/results/`.
-- Transactions scoring >= 50 on fraud risk are flagged and not settled.
-- Cleared transactions are settled with a 0.5% fee (ROUND_HALF_UP) and a net amount.
+
+- Transactions failing field, amount, or currency checks are rejected with a reason and written to
+  `shared/results/`.
+- Transactions scoring `>= 50` on fraud risk are flagged and never settled.
+- Cleared transactions are settled with a 0.5% fee (ROUND_HALF_UP, 2 decimal places) and a net amount.
 - Every agent operation is logged with an ISO 8601 timestamp, agent name, transaction id, and outcome.
-- All input transactions appear in `shared/results/` exactly once.
+- All input transactions appear in `shared/results/` exactly once (settled, flagged, or rejected).
 
 ## 3. Implementation Notes
-- Money: `decimal.js`, never float; `ROUND_HALF_UP` at 2 decimal places.
-- Currency: ISO 4217 allow-list.
-- Logging: audit trail (`timestamp | agent | transaction_id | outcome`); no account numbers,
-  names, or descriptions logged.
-- Communication: JSON files through `shared/input`, `shared/processing`, `shared/output`,
-  `shared/results`. Routing between agents is driven by the message `target_agent` field.
+
+- **Money:** `decimal.js`, never `float`/`number`; `ROUND_HALF_UP` at 2 decimal places.
+- **Currency:** ISO 4217 allow-list (USD, EUR, GBP, JPY, …).
+- **Audit trail:** every operation logged as `timestamp | agent | transaction_id | outcome`.
+- **PII:** account numbers, names, and descriptions are never logged in plaintext.
+- **Communication:** JSON messages through `shared/input`, `shared/processing`, `shared/output`,
+  `shared/results`; routing between agents is driven by the message `target_agent` field.
 
 ## 4. Context
-- Beginning state: `sample-transactions.json` (8 raw records).
-- Ending state: `shared/results/` populated, a pipeline summary report, test coverage >= 90%.
+
+- **Beginning state:** `sample-transactions.json` (8 raw records).
+- **Ending state:** `shared/results/` populated, a pipeline summary report, test coverage `>= 90%`.
 
 ## 5. Low-Level Tasks
 
@@ -32,22 +37,23 @@ Prompt: "Create a validator that rejects missing required fields, non-positive a
 File to CREATE: agents/transaction_validator.ts
 Function to CREATE: validateTransaction(msg: AgentMessage): AgentMessage
 Details: required fields transaction_id, timestamp, source_account, destination_account, amount,
-         currency, transaction_type; amount > 0; currency in ISO 4217.
+         currency, transaction_type; amount > 0; currency in ISO 4217. On failure → results with
+         status=rejected and a reason.
 
 Task: Fraud Detector
-Prompt: "Create a fraud detector that scores high-value (>=10k:+50), structuring (9k–10k:+30),
-         cross-border (+20), off-hours 00–05 UTC (+15); flag if score>=50 else clear and route to
-         settlement_processor."
+Prompt: "Create a fraud detector that scores high-value (>=10k:+50), structuring (9k-10k:+30),
+         cross-border (country != US:+20), off-hours (00-05 UTC:+15); flag if score>=50, else clear
+         and route to settlement_processor."
 File to CREATE: agents/fraud_detector.ts
 Function to CREATE: detectFraud(msg: AgentMessage): AgentMessage
-Details: short-circuit flagged transactions to results with risk_score and reason.
+Details: short-circuit flagged transactions straight to results with risk_score and reason.
 
 Task: Settlement Processor
-Prompt: "Create a settlement processor that charges a 0.5% fee (ROUND_HALF_UP, 2 dp), computes net
-         amount, marks settled with settled_at, routes to results."
+Prompt: "Create a settlement processor that charges a 0.5% fee (ROUND_HALF_UP, 2 dp), computes the
+         net amount, marks the transaction settled with settled_at, and routes to results."
 File to CREATE: agents/settlement_processor.ts
 Function to CREATE: settleTransaction(msg: AgentMessage): AgentMessage
-Details: fee = amount*0.005 rounded half-up; net = amount - fee.
+Details: fee = amount * 0.005 rounded half-up to 2 dp; net = amount - fee.
 ```
 
 ## Expected outcomes (8 sample transactions)
