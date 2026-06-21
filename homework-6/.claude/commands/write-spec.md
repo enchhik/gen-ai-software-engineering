@@ -2,7 +2,7 @@
 description: Generate a project specification from the homework-6 template
 ---
 
-Generate `homework-6/specification.md` following the 5-section template from TASKS.md:
+Generate `specification.md` following the 5-section template from TASKS.md:
 
 1. **High-Level Objective** — one sentence on what the pipeline does.
 2. **Mid-Level Objectives** — 4–5 concrete, testable requirements.

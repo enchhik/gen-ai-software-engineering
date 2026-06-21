@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -Eq 'git[[:space:]]+push'; then cd \"$CLAUDE_PROJECT_DIR/homework-6\" && npm run test:cov --silent && npm run check-coverage; fi"
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -Eq 'git[[:space:]]+push'; then cd \"$CLAUDE_PROJECT_DIR\" && npm run test:cov --silent && npm run check-coverage; fi"
           }
         ]
       }
