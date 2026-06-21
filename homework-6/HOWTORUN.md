@@ -32,7 +32,15 @@
     - tool `list_pipeline_results`
     - resource `pipeline://summary`
 
-## Slash commands (Claude Code)
+## Slash commands & coverage hook (Claude Code)
+
+> **Launch Claude Code from this `homework-6/` directory** (`cd homework-6 && claude`).
+> Claude Code discovers project slash commands and `settings.json` hooks from the **project-root**
+> `.claude/` only — it does not scan nested subdirectories. Running from the repo root would not
+> see `homework-6/.claude/`, so the commands and the coverage-gate hook would be inactive.
+
+With Claude Code started in `homework-6/`:
 - `/run-pipeline` — clears shared/, runs the pipeline, reports results.
 - `/validate-transactions` — dry-run validation report.
 - `/write-spec` — regenerate the specification from the template.
+- The `PreToolUse` coverage-gate hook in `.claude/settings.json` runs before any `git push`.
