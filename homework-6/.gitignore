@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+shared/input/*
+shared/processing/*
+shared/output/*
+shared/results/*
+!shared/**/.gitkeep
+*.log
+
+# Local working files (not deliverables): review brief and PR body draft
+CLAUDE_FIX_NOTES.md
+PR_BODY.md
