@@ -40,7 +40,15 @@
 > see `homework-6/.claude/`, so the commands and the coverage-gate hook would be inactive.
 
 With Claude Code started in `homework-6/`:
+
+Meta-agent workflows (build/development time):
+- `/write-spec` — Agent 1: regenerate the specification from the template.
+- `/generate-pipeline` — Agent 2: generate the runtime pipeline code (uses context7).
+- `/write-tests` — Agent 3: generate tests and keep coverage above the gate.
+- `/write-docs` — Agent 4: generate/update README and HOWTORUN.
+
+Operational workflows:
 - `/run-pipeline` — clears shared/, runs the pipeline, reports results.
 - `/validate-transactions` — dry-run validation report.
-- `/write-spec` — regenerate the specification from the template.
-- The `PreToolUse` coverage-gate hook in `.claude/settings.json` runs before any `git push`.
+
+The `PreToolUse` coverage-gate hook in `.claude/settings.json` runs before any `git push`.

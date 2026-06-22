@@ -11,6 +11,21 @@ This project is also the realization of the four meta-agents from `TASKS.md`: a 
 workflow, a code-generation workflow (using context7 for library lookups), a unit-test workflow
 backed by a coverage gate that blocks pushes below 80%, and a documentation workflow.
 
+## Two agent layers
+
+This submission has **two distinct layers of agents**:
+
+- **Meta-agents (build time)** — four Claude Code workflows that *create* the project artifacts:
+  `/write-spec` (specification), `/generate-pipeline` (code), `/write-tests` (tests + coverage
+  gate), `/write-docs` (documentation). They are reusable workflow recipes in `.claude/commands/`.
+- **Runtime agents (run time)** — the three pipeline agents below that *process* transactions.
+  They are deterministic TypeScript functions and **do not call an LLM**, which keeps the pipeline
+  reproducible and fully testable.
+
+The project itself was built with Claude Code / superpowers using a subagent-driven workflow
+(Opus coordinator + Sonnet subagents); the slash commands formalize those build workflows so they
+can be re-run. See `agents.md` for the full mapping.
+
 ## Agents
 - **Transaction Validator** — checks required fields, positive amount, ISO 4217 currency.
 - **Fraud Detector** — risk-scores high-value, structuring, cross-border, off-hours; flags score ≥ 50.

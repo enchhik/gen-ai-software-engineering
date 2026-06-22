@@ -1,9 +1,36 @@
 # agents.md — Multi-Agent Banking Pipeline
 
 ## Project context
-A deterministic, file-driven banking transaction pipeline. Three runtime agents communicate via
-JSON files in `shared/`. Built and maintained with AI agents (Claude Code) per the four meta-agent
-workflow in `TASKS.md` (specification, code generation, tests + coverage gate, documentation).
+A deterministic, file-driven banking transaction pipeline. The project has **two layers of agents**:
+build-time **meta-agents** (Claude Code workflows that create the artifacts) and **runtime agents**
+(deterministic TypeScript functions that process transactions). This split follows the four
+meta-agent workflow in `TASKS.md`.
+
+## Meta-agents (build/development time)
+Claude Code workflows that *create* the homework artifacts. Each is a reusable slash command
+in `.claude/commands/`:
+
+| Meta-agent | Role | Slash command |
+|---|---|---|
+| Agent 1 — Specification | Produce `specification.md` from the template | `/write-spec` |
+| Agent 2 — Code generation | Generate `agents/`, `lib/pipeline.ts`, `integrator.ts`, `research-notes.md` (with context7) | `/generate-pipeline` |
+| Agent 3 — Unit tests | Generate tests, run coverage, keep the gate ≥ 80% (target ≥ 90%) | `/write-tests` |
+| Agent 4 — Documentation | Generate/update `README.md`, `HOWTORUN.md` (incl. student name) | `/write-docs` |
+
+The real build used Claude Code (Opus) as coordinator plus Sonnet subagents via the
+superpowers / subagent-driven workflow; the slash commands formalize those workflows so they
+can be re-run. They are deliverables/recipes — subagents did not need to invoke them while first
+writing the code.
+
+## Runtime pipeline agents (run time)
+Deterministic TypeScript functions `(msg: AgentMessage) => AgentMessage`. **They do not call an LLM.**
+They communicate via JSON files in `shared/`, routed by each message's `target_agent` field.
+
+| Runtime agent | File |
+|---|---|
+| Transaction Validator | `agents/transaction_validator.ts` |
+| Fraud Detector | `agents/fraud_detector.ts` |
+| Settlement Processor | `agents/settlement_processor.ts` |
 
 ## Tech stack (authoritative — do not improvise)
 - Language: TypeScript on Node.js
