@@ -1,6 +1,8 @@
 # Homework 6 — Multi-Agent Banking Pipeline
 
-> **Created by Denys Ostrometskyi**
+> **Created by**: Denys Ostrometskyi
+> **Date Submitted**: 2026-06-22
+> **AI Tools Used**: Claude Code (Opus 4.8 coordinator + Sonnet subagents, superpowers / subagent-driven), context7 MCP
 
 A file-driven, multi-agent pipeline that validates, fraud-screens, and settles banking
 transactions. An orchestrator loads raw transactions, then three agents process each one and write
